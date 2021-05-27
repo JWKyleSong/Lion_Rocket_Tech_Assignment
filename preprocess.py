@@ -2,12 +2,12 @@ import argparse
 import os
 from multiprocessing import cpu_count
 from tqdm import tqdm
-from datasets import amy, blizzard, ljspeech, kusal, mailabs
+from datasets import amy, blizzard, ljspeech, kusal, mailabs, KSS
 from datasets import mrs
 from hparams import hparams, hparams_debug_string
 import sys
 
-
+'''
 def preprocess_blizzard(args):
   in_dir = os.path.join(args.base_dir, 'Blizzard2012')
   out_dir = os.path.join(args.base_dir, args.output)
@@ -15,7 +15,6 @@ def preprocess_blizzard(args):
   metadata = blizzard.build_from_path(
       in_dir, out_dir, args.num_workers, tqdm=tqdm)
   write_metadata(metadata, out_dir)
-
 
 def preprocess_ljspeech(args):
   in_dir = os.path.join(args.base_dir, 'LJSpeech-1.1')
@@ -59,6 +58,16 @@ def preprocess_mailabs(args):
   metadata = mailabs.build_from_path(
       in_dir, out_dir, books, args.num_workers, tqdm)
   write_metadata(metadata, out_dir)
+'''
+# KSS added
+
+def preprocess_KSS(args):
+  in_dir = os.path.join(args.base_dir, 'KSS')
+  out_dir = os.path.join(args.base_dir, args.output)
+  os.makedirs(out_dir, exist_ok=True)
+  metadata = KSS.build_from_path(
+      in_dir, out_dir, args.num_workers, tqdm=tqdm)
+  write_metadata(metadata, out_dir)
 
 
 def write_metadata(metadata, out_dir):
@@ -86,12 +95,12 @@ def write_metadata(metadata, out_dir):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--base_dir', default=os.path.expanduser('~/tacotron'))
+  parser.add_argument('--base_dir', default=os.path.expanduser('~/tacotron'))  
   parser.add_argument('--mrs_dir', required=False)
   parser.add_argument('--mrs_username', required=False)
-  parser.add_argument('--output', default='training')
+  parser.add_argument('--output', default='training')  
   parser.add_argument(
-      '--dataset', required=True, choices=['amy', 'blizzard', 'ljspeech', 'kusal', 'mailabs','mrs']
+      '--dataset', required=True, choices=['amy', 'blizzard', 'ljspeech', 'kusal', 'mailabs','mrs', 'KSS'] # KSS added
   )
   parser.add_argument('--mailabs_books_dir',
                       help='absolute directory to the books for the mlailabs')
@@ -123,6 +132,9 @@ def main():
     preprocess_mailabs(args)
   elif args.dataset == 'mrs':
     preprocess_mrs(args)
+  # KSS added
+  elif args.dataset == 'KSS': 
+    preprocess_KSS(args)
 
 
 if __name__ == "__main__":

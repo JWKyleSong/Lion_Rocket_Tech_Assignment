@@ -10,6 +10,8 @@ import copy
 import seaborn as sns
 import random
 from text.cmudict import CMUDict
+from jamo import h2j, j2hcj
+from matplotlib import font_manager, rc 
 
 def get_audio_seconds(frames):
     return (frames*12.5)/1000
@@ -156,27 +158,23 @@ def plot(meta_data, save_path=None):
         plt.savefig(os.path.join(save_path, name))
 
 
-def plot_phonemes(train_path, cmu_dict_path, save_path):
-    cmudict = CMUDict(cmu_dict_path)
+def plot_phonemes(train_path, save_path):
+    #cmudict = CMUDict(cmu_dict_path)
+
+    rc('font', family="NanumGothic")
 
     phonemes = {}
 
     with open(train_path, 'r') as f:
         data = csv.reader(f, delimiter='|')
-        phonemes["None"] = 0
         for row in data:
-            words = row[3].split()
+            words = jamo_str = j2hcj(h2j(row[3]))
             for word in words:
-                pho = cmudict.lookup(word)
-                if pho:
-                    indie = pho[0].split()
-                    for nemes in indie:
-                        if phonemes.get(nemes):
-                            phonemes[nemes] += 1
-                        else:
-                            phonemes[nemes] = 1
-                else:
-                    phonemes["None"] += 1
+                if word != ' ':
+                    if phonemes.get(word):
+                        phonemes[word] += 1
+                    else:
+                        phonemes[word] = 1
 
     x, y = [], []
     for key in phonemes:
@@ -200,16 +198,24 @@ def main():
     parser.add_argument(
         '--save_to', help='path to save charts of data to'
     )
+    '''
     parser.add_argument(
-        '--cmu_dict_path', help='give cmudict-0.7b to see phoneme distribution' 
+        '--font_path', help='font path'
     )
+    '''
     args = parser.parse_args()
     meta_data = process_meta_data(args.train_file_path)
     plt.rcParams["figure.figsize"] = (10, 5)
     plot(meta_data, save_path=args.save_to)
+
+    plt.rcParams["figure.figsize"] = (30, 10)
+    plot_phonemes(args.train_file_path, args.save_to)
+
+    '''
     if args.cmu_dict_path:
         plt.rcParams["figure.figsize"] = (30, 10)
         plot_phonemes(args.train_file_path, args.cmu_dict_path, args.save_to)
+    '''
     
     plt.show()
 
